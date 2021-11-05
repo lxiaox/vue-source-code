@@ -34,6 +34,9 @@ class Dep {
   }
   notify() {
     this.deps.forEach((dep) => queueJob(dep))
+    this.deps.forEach((dep) => {
+      dep.options && dep.options.schedular && dep.options.schedular()
+    })
   }
 }
 
