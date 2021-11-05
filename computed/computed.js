@@ -1,5 +1,18 @@
 // 接watchEffect的代码，
-// 1实现计算属性 2实现计算属性的缓存
+// 1实现计算属性 使用get关键字
+
+// 2实现计算属性的缓存
+// 作用：减少计算次数，提高性能。
+
+// 例如y是依赖x的计算属性，但是即使x没有发生变化，每次访问y都会重新计算，其实y的结果是没有变化的，没必要重新计算消耗性能。
+
+// 所以就需要缓存：当x没有变化时y不会重新计算，使用原来的值；当x变化了再重新计算值。
+
+// 这里的缓存指的不是想缓存函数那样把原来的值存起来，只是阻止计算就行了。
+
+// 思路：设置一个缓存标识dirty表示脏数据（脏了的数据就需要重新计算），一开始dirty值为true，表示需要重新计算，当y的计算函数执行之后，dirty值置为false，表示不需要计算。当x值发生变化后再将dirty置为true，再次访问y时就需要重新计算。
+
+// x修改后dirty置为true的思路：之前y是没有监听x的，无法关联x的修改，所以将y的计算函数加入x的effect中，通过effect的options的schedular修改。
 
 let x, y, active
 
@@ -86,9 +99,13 @@ let watchEffect = function (cb) {
 // 增加computed计算属性
 let computed = (cb) => {
   let v
+  let dirty = true
   return {
     get value() {
-      v = cb()
+      if (dirty) {
+        v = cb()
+        dirty = false
+      }
       return v
     },
   }
