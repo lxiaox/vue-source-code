@@ -82,3 +82,27 @@ let watchEffect = function (cb) {
     cleanUpEffect(runner)
   }
 }
+
+// 增加computed计算属性
+let computed = (cb) => {
+  let v
+  return {
+    get value() {
+      v = cb()
+      return v
+    },
+  }
+}
+
+x = ref(1)
+y = computed(() => {
+  return x.value * 2
+})
+
+watchEffect(() => {
+  document.getElementById('xtext').innerText = `x = ${x.value}`
+  document.getElementById('ytext').innerText = `y = x*2 = ${y.value}`
+})
+document.getElementById('add').addEventListener('click', () => {
+  x.value += 1
+})
