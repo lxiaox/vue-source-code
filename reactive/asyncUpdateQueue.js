@@ -64,11 +64,8 @@ z.value = 100
 // 把响应事件添加到微任务队列，而不是马上执行，所以在deps依赖对象里的notify（通知响应）函数不直接执行，而是收集，收集到一个数组queue中，通过queueJob方法进行收集
 
 let x, y, z, active
-let watch = function (cb) {
-  active = cb
-  active()
-  active = null
-}
+
+// 异步更新队列
 let queue = []
 let nextTick = (cb) => Promise.resolve().then(cb)
 let flushJob = () => {
@@ -85,6 +82,7 @@ let queueJob = (dep) => {
   }
 }
 
+// 支持多个依赖收集和通知依赖更新
 class Dep {
   constructor() {
     this.deps = new Set()
@@ -97,6 +95,7 @@ class Dep {
   }
 }
 
+// ref函数实现响应式数据
 let ref = (initValue) => {
   let value = initValue
   let dep = new Dep()
@@ -112,11 +111,17 @@ let ref = (initValue) => {
   })
 }
 
+// 监听新增的依赖，更新响应事件
+let watch = function (cb) {
+  active = cb
+  active()
+  active = null
+}
+
 x = ref(1)
 y = ref(2)
 z = ref(3)
 
-// let str
 watch(() => {
   let str = `x = ${x.value} | y =${y.value} | z =${z.value}`
   document.write(str + '<hr>')

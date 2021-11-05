@@ -101,12 +101,8 @@
 // 怎么实现dep对象呢？可以使用class，有值、有方法属性。还可以去重。
 
 let x, y, z, active
-let onXChanged = function (cb) {
-  active = cb
-  active()
-  active = null // 因为每访问一次x就会收集一次active，所以收集过了的就置为空。
-}
 
+// 支持多个依赖收集和通知依赖更新
 class Dep {
   constructor() {
     this.deps = new Set() // 去重
@@ -119,6 +115,7 @@ class Dep {
   }
 }
 
+// ref函数实现响应式数据
 let ref = (initValue) => {
   let value = initValue
   let dep = new Dep()
@@ -132,6 +129,13 @@ let ref = (initValue) => {
       dep.notify()
     },
   })
+}
+
+// 监听新增的依赖，更新响应事件
+let onXChanged = function (cb) {
+  active = cb
+  active()
+  active = null // 因为每访问一次x就会收集一次active，所以收集过了的就置为空。
 }
 
 x = ref(1)
