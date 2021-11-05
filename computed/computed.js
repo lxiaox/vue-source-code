@@ -100,12 +100,22 @@ let watchEffect = function (cb) {
 let computed = (cb) => {
   let v
   let dirty = true
+  const runner = createEffect(cb, {
+    schedular() {
+      if (!dirty) {
+        dirty = true
+      }
+    },
+  })
   return {
     get value() {
       if (dirty) {
-        v = cb()
+        v = runner()
         dirty = false
       }
+      // else {
+      //   console.log('y缓存了')
+      // }
       return v
     },
   }
@@ -113,8 +123,18 @@ let computed = (cb) => {
 
 x = ref(1)
 y = computed(() => {
+  // console.log('y重新计算了')
   return x.value * 2
 })
+// setTimeout(() => {
+//   console.log(y.value)
+// }, 1000)
+// setTimeout(() => {
+//   console.log(y.value + 1)
+// }, 3000)
+// setTimeout(() => {
+//   console.log(y.value + 2)
+// }, 5000)
 
 watchEffect(() => {
   document.getElementById('xtext').innerText = `x = ${x.value}`
