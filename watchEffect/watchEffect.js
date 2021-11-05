@@ -51,22 +51,35 @@ let ref = (initValue) => {
 }
 
 // 监听新增的依赖，更新响应事件
-let watch = function (cb) {
-  active = cb
-  active()
-  active = null
+let createEffect = (fn, options = {}) => {
+  let effect = (...args) => {
+    try {
+      active = effect
+      return fn(...args)
+    } finally {
+      active = null
+    }
+  }
+  effect.options = options
+  return effect
+}
+let watchEffect = function (cb) {
+  let runner = createEffect(cb)
+  runner()
 }
 
 x = ref(1)
 y = ref(2)
 z = ref(3)
 
-watch(() => {
+watchEffect(() => {
   let str = `x = ${x.value} | y =${y.value} | z =${z.value}`
   document.write(str + '<hr>')
   console.log(str)
 })
 
-x.value = 100
-y.value = 200
-z.value = 300
+setTimeout(() => {
+  x.value = 100
+  y.value = 200
+  z.value = 300
+}, 1000)
