@@ -1,3 +1,5 @@
+// 实现计算属性computed（接异步更新队列的代码）
+
 let x, y, active
 let watch = function (cb) {
   active = cb
