@@ -27,7 +27,10 @@ class Dep {
     this.deps = new Set()
   }
   depend() {
-    if (active) this.deps.add(active)
+    if (active) {
+      this.deps.add(active)
+      active.depsArr.push(this.deps)
+    }
   }
   notify() {
     this.deps.forEach((dep) => queueJob(dep))
@@ -61,25 +64,47 @@ let createEffect = (fn, options = {}) => {
     }
   }
   effect.options = options
+  effect.depsArr = []
   return effect
+}
+let cleanUpEffect = (effect) => {
+  const { depsArr } = effect
+  depsArr.forEach((deps) => {
+    deps.delete(effect)
+  })
 }
 let watchEffect = function (cb) {
   let runner = createEffect(cb)
   runner()
+  return () => {
+    cleanUpEffect(runner)
+  }
 }
 
 x = ref(1)
 y = ref(2)
 z = ref(3)
 
-watchEffect(() => {
+const stop = watchEffect(() => {
   let str = `x = ${x.value} | y =${y.value} | z =${z.value}`
   document.write(str + '<hr>')
   console.log(str)
 })
 
+//过1s xyz修改会打印
 setTimeout(() => {
   x.value = 100
   y.value = 200
   z.value = 300
 }, 1000)
+
+setTimeout(() => {
+  stop()
+}, 2000)
+
+// stop之后不会继续监听，下面的xyz修改不会打印。
+setTimeout(() => {
+  x.value = 1000
+  y.value = 2000
+  z.value = 3000
+}, 3000)
