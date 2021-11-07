@@ -1,5 +1,9 @@
 // 接conmputed的代码，实现watch
 
+// 1 可以监听一个函数
+// 2 第2个参数接受callback函数，响应时调用callback，将新旧两个value作为callback的参数。
+// 3 第3个参数接收options{immeduate}表示立即执行一遍callback
+
 let x, y, active
 
 // 异步更新队列
@@ -82,6 +86,36 @@ let watchEffect = function (cb) {
   }
 }
 
+// 实现watch
+let watch = (source, cb, options = {}) => {
+  // source：监听函数 或者 数组、对象属性
+  const { immediate } = options
+  const getV = () => {
+    return source() // 执行source，加入依赖中
+  }
+  let oldV
+  const runner = createEffect(getV, {
+    schedular: () => {
+      let newV = getV()
+      if (newV !== oldV) {
+        cb(newV, oldV)
+        oldV = newV
+      }
+    },
+  })
+  runner()
+
+  // 这里设定的是：立即执行的时候看作oldV不存在
+
+  if (immediate) {
+    let newV = getV()
+    cb(newV, oldV)
+    oldV = newV
+  } else {
+    oldV = getV()
+  }
+}
+
 // 增加computed计算属性
 let computed = (cb) => {
   let v
@@ -99,23 +133,24 @@ let computed = (cb) => {
         v = runner()
         dirty = false
       }
-      // else {
-      //   console.log('y缓存了')
-      // }
       return v
     },
   }
 }
 
 x = ref(1)
-y = computed(() => {
-  return x.value * 2
-})
 
 watchEffect(() => {
   document.getElementById('xtext').innerText = `x = ${x.value}`
-  document.getElementById('ytext').innerText = `y = x*2 = ${y.value}`
 })
 document.getElementById('add').addEventListener('click', () => {
   x.value += 1
 })
+
+watch(
+  () => x.value,
+  (currentValue, oldValue) => {
+    console.log('oldValue:', oldValue, 'currentValue:', currentValue)
+  },
+  { immediate: true }
+)
