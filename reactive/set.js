@@ -19,3 +19,7 @@ let set = (target, prop, initValue) => {
 let x = ref(1)
 //x.a = 100
 set(x, 'a', 100)
+
+// set可以用于修改数组，实现数组各项的监听
+let a = [1]
+set(a, 1, 10)
