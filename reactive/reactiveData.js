@@ -115,20 +115,38 @@ class Dep {
   }
 }
 
-// ref函数实现响应式数据
+// ref函数实现响应式数据（Object.defineProperty）
+// let ref = (initValue) => {
+//   let value = initValue
+//   let dep = new Dep()
+//   return Object.defineProperty({}, 'value', {
+//     get() {
+//       dep.depend()
+//       return value
+//     },
+//     set(newValue) {
+//       value = newValue
+//       dep.notify()
+//     },
+//   })
+// }
+
+// ref函数实现响应式数据（Proxy）
 let ref = (initValue) => {
-  let value = initValue
   let dep = new Dep()
-  return Object.defineProperty({}, 'value', {
-    get() {
-      dep.depend()
-      return value
-    },
-    set(newValue) {
-      value = newValue
-      dep.notify()
-    },
-  })
+  return new Proxy(
+    { value: initValue },
+    {
+      get(target, prop) {
+        dep.depend()
+        return Reflect.get(target, prop)
+      },
+      set(target, prop, value) {
+        Reflect.set(target, prop, value)
+        dep.notify()
+      },
+    }
+  )
 }
 
 // 监听新增的依赖，更新响应事件
@@ -158,5 +176,9 @@ onXChanged(() => {
   document.write(`x + 100 = ${x.value + 100}<hr>`)
 })
 
-x.value = 2
-x.value = 3
+setTimeout(() => {
+  x.value = 2
+}, 1000)
+setTimeout(() => {
+  x.value = 3
+}, 2000)
