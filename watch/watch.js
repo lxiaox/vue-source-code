@@ -32,6 +32,11 @@ class Dep {
     if (active) {
       this.deps.add(active)
       active.depsArr.push(this.deps)
+      // active就是目前正在处理的依赖effect（watch接受的函数），effect可能依赖多个变量，而每个变量都有一个deps（里面保存了依赖这个变量的所有effect），所以都要存起来要用数组depsArr。等解除这个依赖的时候，就要解除effect涉及到的所有变量的deps里面保存的effect。
+      // effect里面有depsArr保存了依赖的所有变量的deps
+      // 变量的deps保存了所以依赖这个变量的effect
+      // 比如effectA函数里依赖变量m、n
+      // 而依赖m的还有effectB、effectC
     }
   }
   notify() {

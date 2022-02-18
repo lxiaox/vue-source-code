@@ -4,4 +4,12 @@
 
 ### 异步更新队列
 
-## computed 函数
+### 计算属性 computed
+
+### watch()
+
+### watchEffect()
+
+### watch()
+
+### 代理包装 push()
